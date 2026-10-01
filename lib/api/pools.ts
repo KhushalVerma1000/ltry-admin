@@ -141,7 +141,7 @@ export async function getPoolRounds(poolPublicId: string): Promise<ApiResponse<P
 export async function createPoolRound(
     poolPublicId: string,
     data: {
-        roundNumber: number;
+        // roundNumber is assigned by the server
         startsAt: string;
         endsAt: string;
     }

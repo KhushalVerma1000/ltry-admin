@@ -30,11 +30,34 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { PlusIcon, RefreshCwIcon, SlidersHorizontalIcon, EyeIcon, Loader2, Trophy } from "lucide-react"
+import { PlusIcon, RefreshCwIcon, SlidersHorizontalIcon, EyeIcon, Loader2, Trophy, ArrowRightIcon, LockIcon } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 
-const ROUND_STATUS_OPTIONS: RoundStatus[] = ["UPCOMING", "ACTIVE", "DRAWING", "CLOSED", "CANCELLED"]
+// Mirrors the backend rules: UPCOMING -> ACTIVE -> DRAWING -> CLOSED, and a
+// round can be CANCELLED any time before it closes. CLOSED / CANCELLED are final.
+const ALLOWED_TRANSITIONS: Record<RoundStatus, RoundStatus[]> = {
+    UPCOMING:  ["ACTIVE", "CANCELLED"],
+    ACTIVE:    ["DRAWING", "CANCELLED"],
+    DRAWING:   ["CLOSED", "ACTIVE", "CANCELLED"],
+    CLOSED:    [],
+    CANCELLED: [],
+}
+
+const STATUS_HELP: Record<RoundStatus, string> = {
+    UPCOMING:  "Created but not open to players yet.",
+    ACTIVE:    "Open for booking. Players can pick and pay for seats.",
+    DRAWING:   "Booking is locked and a countdown to the draw is shown to players.",
+    CLOSED:    "Winners are published and the round is finished. This can't be undone.",
+    CANCELLED: "Round is called off. This can't be undone.",
+}
+
+// The one step an admin normally takes next, shown as a quick button per row.
+const NEXT_STEP: Partial<Record<RoundStatus, { to: RoundStatus; label: string }>> = {
+    UPCOMING: { to: "ACTIVE",  label: "Open booking" },
+    ACTIVE:   { to: "DRAWING", label: "Start draw" },
+    DRAWING:  { to: "CLOSED",  label: "Close round" },
+}
 
 const STATUS_BADGE: Record<RoundStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
     ACTIVE:    { label: "Active",    variant: "default" },
@@ -61,26 +84,29 @@ export function RoundList({ poolPublicId, poolName, initialRounds }: RoundListPr
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
     // Create round form state
-    const [roundNumber, setRoundNumber] = useState("")
+    const nextRoundNumber = rounds.reduce((max, r) => Math.max(max, r.roundNumber), 0) + 1
     const [startsAt, setStartsAt] = useState("")
     const [endsAt, setEndsAt] = useState("")
 
     const handleCreateRound = async () => {
-        if (!roundNumber || !startsAt || !endsAt) {
-            toast.error("All fields are required.")
+        if (!startsAt || !endsAt) {
+            toast.error("Start and end time are required.")
+            return
+        }
+        if (new Date(endsAt) <= new Date(startsAt)) {
+            toast.error("The round must end after it starts.")
             return
         }
         setIsCreating(true)
         try {
             const res = await createPoolRound(poolPublicId, {
-                roundNumber: parseInt(roundNumber),
                 startsAt: new Date(startsAt).toISOString(),
                 endsAt: new Date(endsAt).toISOString(),
             })
             if (res.success && res.data) {
-                toast.success(`Round #${roundNumber} created with ${(res.data as any).round?.seatsSnapshot ?? "?"} seats.`)
+                const created = (res.data as any).round
+                toast.success(`Round #${created?.roundNumber ?? nextRoundNumber} created with ${created?.seatsSnapshot ?? "?"} seats.`)
                 setCreateOpen(false)
-                setRoundNumber("")
                 setStartsAt("")
                 setEndsAt("")
                 window.location.reload()
@@ -94,9 +120,9 @@ export function RoundList({ poolPublicId, poolName, initialRounds }: RoundListPr
         }
     }
 
-    const openStatusDialog = (round: PoolRound) => {
+    const openStatusDialog = (round: PoolRound, preselect?: RoundStatus) => {
         setSelectedRound(round)
-        setNewStatus(round.status)
+        setNewStatus(preselect ?? ALLOWED_TRANSITIONS[round.status][0] ?? round.status)
         if ((round as any).drawnAt) {
             const d = new Date((round as any).drawnAt);
             const localString = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
@@ -109,6 +135,10 @@ export function RoundList({ poolPublicId, poolName, initialRounds }: RoundListPr
 
     const handleUpdateStatus = async () => {
         if (!selectedRound) return
+        if (newStatus === selectedRound.status && newStatus !== "DRAWING") {
+            toast.error("Pick a different status to move this round to.")
+            return
+        }
         if (newStatus === "DRAWING" && !drawnAt) {
             toast.error("Target draw time is required for DRAWING status.")
             return
@@ -209,14 +239,29 @@ export function RoundList({ poolPublicId, poolName, initialRounds }: RoundListPr
                                                         Winners
                                                     </Link>
                                                 </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    title="Update status"
-                                                    onClick={() => openStatusDialog(round)}
-                                                >
-                                                    <SlidersHorizontalIcon className="h-4 w-4" />
-                                                </Button>
+                                                {NEXT_STEP[round.status] && (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => openStatusDialog(round, NEXT_STEP[round.status]!.to)}
+                                                    >
+                                                        {NEXT_STEP[round.status]!.label}
+                                                        <ArrowRightIcon className="h-3.5 w-3.5 ml-1.5" />
+                                                    </Button>
+                                                )}
+                                                {ALLOWED_TRANSITIONS[round.status].length === 0 ? (
+                                                    <span className="inline-flex items-center px-2 text-muted-foreground" title="This round is final">
+                                                        <LockIcon className="h-4 w-4" />
+                                                    </span>
+                                                ) : (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        title="More status options"
+                                                        onClick={() => openStatusDialog(round)}
+                                                    >
+                                                        <SlidersHorizontalIcon className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -241,12 +286,12 @@ export function RoundList({ poolPublicId, poolName, initialRounds }: RoundListPr
                             <Label htmlFor="roundNumber">Round Number</Label>
                             <Input
                                 id="roundNumber"
-                                type="number"
-                                min={1}
-                                value={roundNumber}
-                                onChange={e => setRoundNumber(e.target.value)}
-                                placeholder="e.g. 1"
+                                value={`#${nextRoundNumber}`}
+                                readOnly
+                                disabled
+                                className="font-semibold"
                             />
+                            <p className="text-xs text-muted-foreground">Assigned automatically in order.</p>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="startsAt">Starts At</Label>
@@ -293,11 +338,24 @@ export function RoundList({ poolPublicId, poolName, initialRounds }: RoundListPr
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                {ROUND_STATUS_OPTIONS.map(s => (
-                                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                                {(selectedRound
+                                    ? (newStatus === selectedRound.status || selectedRound.status === "DRAWING"
+                                        ? [selectedRound.status, ...ALLOWED_TRANSITIONS[selectedRound.status]]
+                                        : ALLOWED_TRANSITIONS[selectedRound.status])
+                                    : []
+                                ).filter((v, i, arr) => arr.indexOf(v) === i).map(st => (
+                                    <SelectItem key={st} value={st}>
+                                        {st}{st === selectedRound?.status ? " (current)" : ""}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
+                        <p className="text-xs text-muted-foreground mt-2">{STATUS_HELP[newStatus]}</p>
+                        {(newStatus === "CLOSED" || newStatus === "CANCELLED") && (
+                            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2 mt-2">
+                                This is final. {newStatus === "CLOSED" ? "Make sure winners are set first." : "Any refunds for booked seats must be handled separately."}
+                            </p>
+                        )}
                     </div>
                     {newStatus === "DRAWING" && (
                         <div className="py-2">

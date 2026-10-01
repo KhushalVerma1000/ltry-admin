@@ -50,7 +50,7 @@ function SortableWinnerItem({ item, index }: { item: DrawWinnerItem; index: numb
         transform,
         transition,
         isDragging
-    } = useSortable({ id: item.id.toString() })
+    } = useSortable({ id: item.publicId })
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -101,8 +101,8 @@ export function DrawWinnersAction({ poolId, roundId, seats }: DrawWinnersActionP
         const { active, over } = event
         if (over && active.id !== over.id) {
             setSelectedWinners((items) => {
-                const oldIndex = items.findIndex((item) => item.id.toString() === active.id)
-                const newIndex = items.findIndex((item) => item.id.toString() === over.id)
+                const oldIndex = items.findIndex((item) => item.publicId === active.id)
+                const newIndex = items.findIndex((item) => item.publicId === over.id)
                 const reordered = arrayMove(items, oldIndex, newIndex)
                 return reordered.map((item, idx) => ({ ...item, position: idx + 1 }))
             })
@@ -141,16 +141,16 @@ export function DrawWinnersAction({ poolId, roundId, seats }: DrawWinnersActionP
     }
 
     const handleSeatClick = (seat: Seat) => {
-        const existing = selectedWinners.find(w => w.name === seat.name)
+        const existing = selectedWinners.find(w => w.publicId === seat.publicId)
         if (existing) {
             const newWinners = selectedWinners
-                .filter(w => w.name !== seat.name)
+                .filter(w => w.publicId !== seat.publicId)
                 .map((w, idx) => ({ ...w, position: idx + 1 }))
             setSelectedWinners(newWinners)
         } else {
             setSelectedWinners([
                 ...selectedWinners,
-                { id: seat.id, name: seat.name, position: selectedWinners.length + 1 }
+                { publicId: seat.publicId, name: seat.name, position: selectedWinners.length + 1 }
             ])
         }
     }
@@ -258,11 +258,11 @@ export function DrawWinnersAction({ poolId, roundId, seats }: DrawWinnersActionP
                                         onDragEnd={handleDragEnd}
                                     >
                                         <SortableContext
-                                            items={selectedWinners.map(w => w.id.toString())}
+                                            items={selectedWinners.map(w => w.publicId)}
                                             strategy={verticalListSortingStrategy}
                                         >
                                             {selectedWinners.map((w, idx) => (
-                                                <SortableWinnerItem key={w.id} item={w} index={idx} />
+                                                <SortableWinnerItem key={w.publicId} item={w} index={idx} />
                                             ))}
                                         </SortableContext>
                                     </DndContext>

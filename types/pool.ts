@@ -93,7 +93,8 @@ export interface User {
 
 // ── Draw winner flow ────────────────────────────────────────────────────────
 export interface DrawWinnerItem {
-    id: number;
+    id?: number;
+    publicId: string;
     name: string;
     position: number;
 }
