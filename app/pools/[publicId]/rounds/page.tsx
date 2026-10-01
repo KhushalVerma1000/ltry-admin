@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { getCurrentAdmin } from "@/lib/get-current-admin"
 import { RoundList } from "@/components/pools/round-list"
 import { getPoolById, getPoolRounds } from "@/lib/api/pools"
 import Link from "next/link"
@@ -33,6 +34,9 @@ export default async function PoolRoundsPage(props: { params: Promise<{ publicId
         console.error("Failed to fetch pool rounds", error)
     }
 
+    const admin = await getCurrentAdmin()
+
+
     return (
         <SidebarProvider
             style={
@@ -42,9 +46,9 @@ export default async function PoolRoundsPage(props: { params: Promise<{ publicId
                 } as React.CSSProperties
             }
         >
-            <AppSidebar variant="inset" />
+            <AppSidebar variant="inset" admin={admin} />
             <SidebarInset>
-                <SiteHeader />
+                <SiteHeader title={`${poolName} · Rounds`} />
                 <div className="flex flex-1 flex-col">
                     <div className="flex flex-1 flex-col gap-2 @container/main">
                         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">

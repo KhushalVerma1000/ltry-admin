@@ -45,8 +45,8 @@ export function PoolForm({ initialData, onSuccess, onCancel }: PoolFormProps) {
                 })
             }
             onSuccess?.()
-        } catch (err: any) {
-            setError(err.message || "Failed to save pool")
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to save pool")
         } finally {
             setLoading(false)
         }
@@ -106,7 +106,7 @@ export function PoolForm({ initialData, onSuccess, onCancel }: PoolFormProps) {
             </div>
 
             <p className="col-span-full text-xs text-muted-foreground">
-                Round start/end dates are set per round. Go to a pool's rounds page to create a round.
+                Round start/end dates are set per round. Go to a pool&apos;s rounds page to create a round.
             </p>
 
             <div className="flex justify-end gap-2 pt-4 col-span-full">

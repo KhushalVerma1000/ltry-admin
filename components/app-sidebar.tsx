@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -14,36 +15,25 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { LayoutDashboardIcon, ListIcon, CommandIcon } from "lucide-react"
+import type { CurrentAdmin } from "@/lib/get-current-admin"
 
-const data = {
-  user: {
-    name: "Admin",
-    email: "admin@ltry.com",
-    avatar: "/avatars/admin.jpg",
+const navMain = [
+  {
+    title: "Dashboard",
+    url: "/Dashboard",
+    icon: <LayoutDashboardIcon />,
   },
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/Dashboard",
-      icon: (
-        <LayoutDashboardIcon
-        />
-      ),
-    },
-    {
-      title: "Pools",
-      url: "/pools",
-      icon: (
-        <ListIcon
-        />
-      ),
-    },
-  ],
-}
+  {
+    title: "Pools",
+    url: "/pools",
+    icon: <ListIcon />,
+  },
+]
 
-import Link from "next/link"
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  admin,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { admin: CurrentAdmin }) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -55,17 +45,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <Link href="/Dashboard">
                 <CommandIcon className="size-5!" />
-                <span className="text-base font-semibold">Ltry Admin</span>
+                <span className="text-base font-semibold">ltry Admin</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={admin} />
       </SidebarFooter>
     </Sidebar>
   )

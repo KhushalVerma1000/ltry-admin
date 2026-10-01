@@ -137,8 +137,8 @@ function WinnerCard({ winner, onPaidUpdate }: { winner: WinnerSeatDetail; onPaid
                                         } else {
                                             toast.error(res.message || "Failed to update status")
                                         }
-                                    } catch (err: any) {
-                                        toast.error(err.message || "Something went wrong")
+                                    } catch (err) {
+                                        toast.error(err instanceof Error ? err.message : "Something went wrong")
                                     } finally {
                                         setIsUpdating(false)
                                     }

@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { PoolList } from "@/components/pools/pool-list"
 import { getPools } from "@/lib/api/pools"
+import { getCurrentAdmin } from "@/lib/get-current-admin"
 
 export default async function PoolsPage() {
     let poolsResponse;
@@ -14,6 +15,7 @@ export default async function PoolsPage() {
     }
 
     const pools = poolsResponse.data || [];
+    const admin = await getCurrentAdmin();
 
     return (
         <SidebarProvider
@@ -24,9 +26,9 @@ export default async function PoolsPage() {
                 } as React.CSSProperties
             }
         >
-            <AppSidebar variant="inset" />
+            <AppSidebar variant="inset" admin={admin} />
             <SidebarInset>
-                <SiteHeader />
+                <SiteHeader title="Pools" />
                 <div className="flex flex-1 flex-col">
                     <div className="flex flex-1 flex-col gap-2 @container/main">
                         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">

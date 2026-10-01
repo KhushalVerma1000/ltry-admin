@@ -1,7 +1,9 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { getPools } from "@/lib/api/pools"
 import Link from "next/link"
+import { PlusIcon } from "lucide-react"
 
 const STATUS_COLORS: Record<string, string> = {
     ACTIVE:    "bg-emerald-100 text-emerald-700",
@@ -17,22 +19,41 @@ export async function DashboardPools() {
         poolsResponse = await getPools();
     } catch (e) {
         console.error("Failed to load pools", e);
-        return <div className="px-4 lg:px-6 text-red-500">Failed to load pools from server.</div>;
+        return (
+            <div className="px-4 lg:px-6">
+                <h2 className="text-xl font-semibold mb-1">Pools overview</h2>
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                    Couldn&apos;t reach the server. Check that the backend is running
+                    and <code className="font-mono">API_URL</code> in <code className="font-mono">.env.local</code> points to it, then refresh.
+                </div>
+            </div>
+        );
     }
 
     const pools = poolsResponse?.data || [];
     if (pools.length === 0) {
         return (
             <div className="px-4 lg:px-6">
-                <h2 className="text-xl font-semibold mb-4">Pools Overview</h2>
-                <div className="text-muted-foreground text-sm">No pools available.</div>
+                <h2 className="text-xl font-semibold mb-1">Pools overview</h2>
+                <div className="rounded-lg border border-dashed py-10 text-center">
+                    <p className="font-medium">No pools yet</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Create your first lottery pool to start selling seats.
+                    </p>
+                    <Button asChild size="sm" className="mt-4">
+                        <Link href="/pools">
+                            <PlusIcon className="mr-1.5 h-4 w-4" />
+                            Create a pool
+                        </Link>
+                    </Button>
+                </div>
             </div>
         )
     }
 
     return (
         <div className="px-4 lg:px-6">
-            <h2 className="text-xl font-semibold mb-4">Pools Overview</h2>
+            <h2 className="text-xl font-semibold mb-4">Pools overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {pools.map(pool => {
                     const round = pool.activeRound;
@@ -68,7 +89,7 @@ export async function DashboardPools() {
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="text-sm text-muted-foreground italic">No active round</div>
+                                        <div className="text-sm text-muted-foreground">No round running yet</div>
                                     )}
                                 </CardContent>
                             </Card>

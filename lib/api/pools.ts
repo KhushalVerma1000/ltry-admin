@@ -2,6 +2,7 @@
 
 import { ApiResponse, Pool, PoolRound, RoundStatus, Seat, WinnerSeatDetail } from "@/types/pool";
 import { cookies } from "next/headers";
+import { API_URL } from "@/lib/config";
 
 const getAuthHeaders = async () => {
     const cookieStore = await cookies();
@@ -18,8 +19,6 @@ const getAuthHeaders = async () => {
         ...(cookieHeader ? { Cookie: cookieHeader } : {}),
     };
 };
-
-const API_URL = process.env.API_URL || "http://localhost:3000/api";
 
 async function apiFetch(url: string, options?: RequestInit) {
     try {

@@ -1,3 +1,7 @@
+"use client"
+
+import { useActionState } from "react"
+import { useFormStatus } from "react-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,53 +18,74 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import type { LoginState } from "@/app/Login/action"
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <Button type="submit" disabled={pending} className="w-full">
+      {pending ? "Signing in…" : "Sign in"}
+    </Button>
+  )
+}
 
 export function LoginForm({
   action,
   className,
   ...props
-}: React.ComponentProps<"div"> & { action: (formData: FormData) => Promise<void> }) {
+}: React.ComponentProps<"div"> & {
+  action: (prevState: LoginState, formData: FormData) => Promise<LoginState>
+}) {
+  const [state, formAction] = useActionState(action, {})
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>Sign in to ltry Admin</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Use your admin email and password to manage pools, rounds, and winners.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={action}>
+          <form action={formAction} noValidate>
             <FieldGroup>
+              {state.error && (
+                <div
+                  role="alert"
+                  className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                >
+                  {state.error}
+                </div>
+              )}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="you@company.com"
+                  autoComplete="username"
+                  aria-invalid={!!state.error}
                   required
                 />
               </Field>
               <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
-                <Input id="password" name="password" type="password" required />
+                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  aria-invalid={!!state.error}
+                  required
+                />
               </Field>
               <Field>
-                <Button type="submit">Login</Button>
-                <Button variant="outline" type="button">
-                  Login with Google
-                </Button>
+                <SubmitButton />
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Forgot your password? Ask another admin to reset it for you —
+                  this panel doesn&apos;t send reset emails yet.
                 </FieldDescription>
               </Field>
             </FieldGroup>

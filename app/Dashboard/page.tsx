@@ -3,8 +3,10 @@ import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 import { DashboardPools } from "@/components/pools/dashboard-pools"
+import { getCurrentAdmin } from "@/lib/get-current-admin"
 
-export default function Page() {
+export default async function Page() {
+  const admin = await getCurrentAdmin()
   return (
     <SidebarProvider
       style={
@@ -14,9 +16,9 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar variant="inset" admin={admin} />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader title="Dashboard" />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">

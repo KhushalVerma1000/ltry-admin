@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { getCurrentAdmin } from "@/lib/get-current-admin"
 import { getWinnersForRound, getPoolById } from "@/lib/api/pools"
 import { WinnersSection } from "@/components/pools/winners-section"
 import { Button } from "@/components/ui/button"
@@ -33,6 +34,9 @@ export default async function RoundWinnersPage(props: {
         console.error("Failed to fetch winners", error)
     }
 
+    const admin = await getCurrentAdmin()
+
+
     return (
         <SidebarProvider
             style={
@@ -42,9 +46,9 @@ export default async function RoundWinnersPage(props: {
                 } as React.CSSProperties
             }
         >
-            <AppSidebar variant="inset" />
+            <AppSidebar variant="inset" admin={admin} />
             <SidebarInset>
-                <SiteHeader />
+                <SiteHeader title={`${poolName} · Winners`} />
                 <div className="flex flex-1 flex-col">
                     <div className="flex flex-1 flex-col gap-2 @container/main">
                         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">

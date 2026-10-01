@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Pool, PoolRound, RoundStatus } from "@/types/pool"
+import { Pool, RoundStatus } from "@/types/pool"
 import { PoolForm } from "./pool-form"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,7 +13,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { EditIcon, PlusIcon, RefreshCwIcon, ChevronRightIcon, TrashIcon, LayersIcon } from "lucide-react"
+import { EditIcon, PlusIcon, RefreshCwIcon, TrashIcon, LayersIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { deletePool } from "@/lib/api/pools"
 import { useToast } from "@/hooks/use-toast"
@@ -144,8 +144,13 @@ export function PoolList({ initialPools }: { initialPools: Pool[] }) {
                     <TableBody>
                         {pools.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center">
-                                    No pools found.
+                                <TableCell colSpan={7} className="h-32 text-center">
+                                    <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
+                                        <span className="font-medium text-foreground">No pools yet</span>
+                                        <span className="text-sm">
+                                            Create your first lottery pool to start selling seats.
+                                        </span>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -168,7 +173,7 @@ export function PoolList({ initialPools }: { initialPools: Pool[] }) {
                                                     <span className="text-xs text-muted-foreground">R{round.roundNumber}</span>
                                                 </div>
                                             ) : (
-                                                <span className="text-xs text-muted-foreground italic">No active round</span>
+                                                <span className="text-xs text-muted-foreground">No round running</span>
                                             )}
                                         </TableCell>
                                         <TableCell>
@@ -238,13 +243,13 @@ export function PoolList({ initialPools }: { initialPools: Pool[] }) {
                             <div>
                                 {deleteStep === "confirm" ? (
                                     <div className="space-y-2 mt-2">
-                                        <div>Are you sure you want to delete the pool <strong>"{poolToDelete?.name}"</strong>?</div>
-                                        <div className="text-xs text-muted-foreground">This action cannot be undone. All rounds and seats will be deleted.</div>
+                                        <div>Delete the pool <strong>&quot;{poolToDelete?.name}&quot;</strong>?</div>
+                                        <div className="text-xs text-muted-foreground">This can&apos;t be undone — every round and seat under this pool will be deleted too.</div>
                                     </div>
                                 ) : (
                                     <div className="space-y-3 mt-2">
-                                        <div>Please type the pool name to confirm deletion:</div>
-                                        <div className="font-semibold text-foreground">"{poolToDelete?.name}"</div>
+                                        <div>Type the pool name to confirm:</div>
+                                        <div className="font-semibold text-foreground">&quot;{poolToDelete?.name}&quot;</div>
                                         <Input
                                             placeholder="Enter pool name"
                                             value={poolNameInput}

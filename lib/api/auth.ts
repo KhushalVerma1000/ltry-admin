@@ -3,6 +3,7 @@
 import { ApiResponse } from "@/types/pool";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { API_URL } from "@/lib/config";
 
 const getAuthHeaders = async () => {
     const cookieStore = await cookies();
@@ -20,8 +21,6 @@ const getAuthHeaders = async () => {
         ...(cookieHeader ? { Cookie: cookieHeader } : {}), // Forward cookies to backend
     };
 };
-
-const API_URL = process.env.API_URL || "http://localhost:3000/api/v1";
 
 export async function logoutAdmin(): Promise<void> {
     try {

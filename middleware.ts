@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { API_URL } from '@/lib/config';
 
 // Define the routes that the middleware should run on.
 // We apply it to all pages except the login, next internals, api, etc.
@@ -43,9 +44,6 @@ export async function middleware(request: NextRequest) {
   // 4. If access token is missing or expired, attempt to refresh
   if (refreshToken) {
     try {
-      // Use the same API_URL logic as your auth API calls
-      const API_URL = process.env.API_URL || "http://localhost:3000/api/v1";
-
       const response = await fetch(`${API_URL}/admin/refresh-token`, {
         method: 'POST',
         headers: {
