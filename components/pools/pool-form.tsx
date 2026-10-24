@@ -116,7 +116,7 @@ export function PoolForm({ initialData, onSuccess, onCancel }: PoolFormProps) {
                     </Button>
                 )}
                 <Button type="submit" disabled={loading}>
-                    {loading ? "Saving..." : initialData ? "Save Changes" : "Create Pool"}
+                    {loading ? "Saving..." : initialData ? "Save changes" : "Create pool"}
                 </Button>
             </div>
         </form>

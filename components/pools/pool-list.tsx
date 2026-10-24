@@ -124,7 +124,7 @@ export function PoolList({ initialPools }: { initialPools: Pool[] }) {
                 </Button>
                 <Button onClick={handleCreate}>
                     <PlusIcon className="mr-2 h-4 w-4" />
-                    Create Pool
+                    Create pool
                 </Button>
             </div>
 
@@ -216,7 +216,7 @@ export function PoolList({ initialPools }: { initialPools: Pool[] }) {
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetContent>
                     <SheetHeader>
-                        <SheetTitle>{editingPool ? "Edit Pool" : "Create Pool"}</SheetTitle>
+                        <SheetTitle>{editingPool ? "Edit pool" : "Create pool"}</SheetTitle>
                         <SheetDescription>
                             {editingPool
                                 ? "Update the details of the selected pool."
