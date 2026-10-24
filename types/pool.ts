@@ -116,23 +116,18 @@ export interface ApiResponse<T> {
     success: boolean;
 }
 
-// ── Winner Seats (from GET /winners/:poolId/round/:roundId) ────────────────
+// ── Winner Seats (from GET /admin/winners/:poolId/round/:roundId) ──────────
+export type PayoutVerification = "UNVERIFIED" | "VERIFIED" | "REJECTED";
+
 export interface WinnerSeatUser {
+    publicId: string;
     name: string;
     phone: string;
     bankAccountNumber: string | null;
     bankIFSCCode: string | null;
     upiId: string | null;
-}
-
-export interface WinnerSeatBooking {
-    id?: string;
-    providerOrderId: string | null;
-    user: WinnerSeatUser;
-}
-
-export interface BookedSeat {
-    booking: WinnerSeatBooking;
+    payoutVerification: PayoutVerification;
+    payoutVerificationNote: string | null;
 }
 
 export interface WinnerSeatDetail {
@@ -142,9 +137,38 @@ export interface WinnerSeatDetail {
     paid?: boolean;
     paidAt?: string | null;
     seat: {
-        id: number;
         name: string;
         publicId: string;
-        bookedSeats: BookedSeat[];
+    };
+    bookingId: string | null;
+    providerOrderId: string | null;
+    /** The user holding the seat's completed booking, or null if unclaimed. */
+    user: WinnerSeatUser | null;
+}
+
+// ── Payout verification (from GET /admin/payout-verifications) ─────────────
+export interface PayoutVerificationRow {
+    publicId: string;
+    name: string;
+    phone: string;
+    bankAccountNumber: string | null;
+    bankIFSCCode: string | null;
+    upiId: string | null;
+    payoutVerification: PayoutVerification;
+    payoutVerifiedAt: string | null;
+    payoutVerificationNote: string | null;
+    createdAt: string;
+    unpaidWinnings: { count: number; amount: number };
+}
+
+export interface PayoutVerificationPage {
+    data: PayoutVerificationRow[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+        hasNext: boolean;
+        hasPrev: boolean;
     };
 }

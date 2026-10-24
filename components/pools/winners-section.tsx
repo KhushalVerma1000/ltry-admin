@@ -1,7 +1,8 @@
 "use client"
 
 import { WinnerSeatDetail } from "@/types/pool"
-import { Trophy, User, Phone, CreditCard, Landmark, Hash, BadgeCheck, CircleDashed, CheckCircle2, Loader2 } from "lucide-react"
+import { Trophy, User, Phone, CreditCard, Landmark, Hash, BadgeCheck, CircleDashed, CheckCircle2, Loader2, ShieldAlert } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -31,7 +32,7 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 function WinnerCard({ winner, onPaidUpdate }: { winner: WinnerSeatDetail; onPaidUpdate?: (updated: WinnerSeatDetail) => void }) {
     const [isUpdating, setIsUpdating] = useState(false)
     const medal = MEDAL_COLORS[winner.position]
-    const user = winner.seat?.bookedSeats?.[0]?.booking?.user ?? null
+    const user = winner.user ?? null
     const isClaimed = !!user
 
     return (
@@ -82,6 +83,17 @@ function WinnerCard({ winner, onPaidUpdate }: { winner: WinnerSeatDetail; onPaid
                         <div className="flex items-center gap-1.5 mb-0.5">
                             <BadgeCheck className="w-3.5 h-3.5 text-emerald-500" />
                             <span className="text-xs font-semibold text-emerald-600">Claimed</span>
+                            <span
+                                className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                                    user!.payoutVerification === "VERIFIED"
+                                        ? "bg-emerald-50 text-emerald-700"
+                                        : user!.payoutVerification === "REJECTED"
+                                        ? "bg-red-50 text-red-700"
+                                        : "bg-amber-50 text-amber-700"
+                                }`}
+                            >
+                                {user!.payoutVerification === "VERIFIED" ? "Verified" : user!.payoutVerification === "REJECTED" ? "Rejected" : "Unverified"}
+                            </span>
                         </div>
                         <InfoRow
                             icon={<User className="w-3 h-3" />}
@@ -123,6 +135,16 @@ function WinnerCard({ winner, onPaidUpdate }: { winner: WinnerSeatDetail; onPaid
                             <div className="flex items-center justify-center gap-2 py-2 px-3 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100">
                                 <CheckCircle2 className="w-4 h-4" />
                                 <span className="text-xs font-bold uppercase tracking-wider">Paid</span>
+                            </div>
+                        ) : user!.payoutVerification !== "VERIFIED" ? (
+                            <div className="flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                                <div className="flex items-center gap-2 text-amber-800">
+                                    <ShieldAlert className="w-4 h-4 shrink-0" />
+                                    <span className="text-xs font-semibold">Verify payout details before paying</span>
+                                </div>
+                                <Button asChild variant="outline" size="sm" className="h-8">
+                                    <Link href="/verifications">Open payout verification</Link>
+                                </Button>
                             </div>
                         ) : (
                             <Button
@@ -167,7 +189,7 @@ export function WinnersSection({ winnerDetails: initialWinners }: { winnerDetail
     if (!winners || winners.length === 0) return null
 
     const sorted = [...winners].sort((a, b) => a.position - b.position)
-    const claimedCount = sorted.filter(w => !!w.seat?.bookedSeats?.[0]?.booking?.user).length
+    const claimedCount = sorted.filter(w => !!w.user).length
     const paidCount = sorted.filter(w => w.paid).length
 
     const handleUpdate = (updated: WinnerSeatDetail) => {

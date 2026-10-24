@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { LayoutDashboardIcon, ListIcon, CommandIcon } from "lucide-react"
+import { LayoutDashboardIcon, ListIcon, CommandIcon, ShieldCheckIcon } from "lucide-react"
 import type { CurrentAdmin } from "@/lib/get-current-admin"
 
 const navMain = [
@@ -27,6 +27,11 @@ const navMain = [
     title: "Pools",
     url: "/pools",
     icon: <ListIcon />,
+  },
+  {
+    title: "Payout verification",
+    url: "/verifications",
+    icon: <ShieldCheckIcon />,
   },
 ]
 

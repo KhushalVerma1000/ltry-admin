@@ -262,14 +262,14 @@ export async function setWinnerSeats(
     return response.json();
 }
 
-/** GET /winners/:poolId/round/:roundId */
+/** GET /admin/winners/:poolId/round/:roundId (admin-only: includes payout details) */
 export async function getWinnersForRound(
     poolPublicId: string,
     roundPublicId: string
 ): Promise<ApiResponse<WinnerSeatDetail[]>> {
     const headers = await getAuthHeaders();
     const response = await apiFetch(
-        `${API_URL}/winners/${poolPublicId}/round/${roundPublicId}`,
+        `${API_URL}/admin/winners/${poolPublicId}/round/${roundPublicId}`,
         {
             method: "GET",
             headers,
